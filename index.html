@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الدردشة الجماعية - أنمي ستريم</title>
+    <link href="https://fonts.googleapis.com/css2?family=Harmattan:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #e50914;
+            --secondary-color: #221f1f;
+            --background-dark: #141414;
+            --background-light: #ffffff;
+            --text-dark: #ffffff;
+            --text-light: #000000;
+            --card-dark: #2f2f2f;
+            --card-light: #f5f5f5;
+            --border-color: #404040;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Harmattan', sans-serif;
+        }
+
+        body {
+            font-family: 'Harmattan', sans-serif;
+            background: var(--background-dark);
+            color: var(--text-dark);
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            backdrop-filter: blur(5px);
+        }
+
+        .loading-content {
+            text-align: center;
+            color: white;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(229, 9, 20, 0.3);
+            border-top: 4px solid #e50914;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .loading-subtext {
+            font-size: 0.9rem;
+            color: #bbb;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            display: flex;
+            height: 100vh;
+            background: linear-gradient(135deg, #141414, #1a1a1a);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.hidden {
+            transform: translateX(100%);
+        }
+
+        /* Header */
+        .chat-header {
+            padding: 20px;
+            background: rgba(229, 9, 20, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: default;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            background: #ff6b6b;
+            transform: scale(1.1);
+        }
+
+        .chat-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #e50914, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .toggle-sidebar {
+            background: none;
+            border: none;
+            color: var(--text-dark);
+            font-size: 1.2rem;
+            cursor: default;
+            transition: color 0.3s ease;
+            display: none;
+        }
+
+        .toggle-sidebar:hover {
+            color: var(--primary-color);
+        }
+
+        /* Admin Status Display */
+        .admin-status {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: var(--warning-color);
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 1000;
+            display: none;
+        }
+
+        .admin-status.show {
+            display: block;
+        }
+
+        /* Online Users */
+        .online-users {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .users-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .users-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            transition: all 0.3s ease;
+            cursor: default;
+            border-radius: 8px;
+        }
+
+        .user-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary-color), #ff6b6b);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-status {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 2px solid #141414;
+            background: var(--success-color);
+        }
+
+        .user-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .user-name.current-user {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .user-name.admin {
+            color: var(--warning-color);
+            font-weight: 600;
+        }
+
+        .admin-badge {
+            background: var(--warning-color);
+            color: #000;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-right: 5px;
+        }
+
+        /* Chat Rules */
+        .chat-rules {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .rules-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--warning-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rules-list {
+            list-style: none;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #bbb;
+        }
+
+        .rules-list li {
+            margin-bottom: 8px;
+            padding-right: 15px;
+            position: relative;
+        }
+
+        .rules-list li::before {
+            content: '•';
+            color: var(--primary-color);
+            position: absolute;
+            right: 0;
+            font-weight: bold;
+        }
+
+        /* Main Chat Area */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Chat Messages */
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
+        }
+
+        /* Message Styles */
+        .message {
+            margin-bottom: 20px;
+            animation: fadeInUp 0.3s ease;
+            max-width: 70%;
+            position: relative;
+        }
+
+        .message.own {
+            margin-right: auto;
+            margin-left: 30%;
+        }
+
+        .message.other {
+            margin-left: auto;
+            margin-right: 30%;
+        }
+
+        .message.sending {
+            opacity: 0.6;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary-color), #ff6b6b);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+            overflow: hidden;
+        }
+
+        .message-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .message-info {
+            flex: 1;
+        }
+
+        .message-author {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .message-author.current-user {
+            color: var(--success-color);
+        }
+
+        .message-author.admin {
+            color: var(--warning-color);
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: #888;
+        }
+
+        /* Reply Styles */
+        .reply-to {
+            background: rgba(255, 255, 255, 0.05);
+            border-right: 3px solid var(--primary-color);
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+
+        .reply-author {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .reply-text {
+            color: #bbb;
+            font-style: italic;
+        }
+
+        .message-content {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+
+        .message.own .message-content {
+            background: linear-gradient(135deg, rgba(229, 9, 20, 0.2), rgba(229, 9, 20, 0.1));
+            border-color: rgba(229, 9, 20, 0.3);
+        }
+
+        .message.other .message-content {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Message Actions */
+        .message-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .message:hover .message-actions {
+            opacity: 1;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #bbb;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            cursor: default;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .reply-btn:hover {
+            background: rgba(23, 162, 184, 0.3);
+            color: var(--info-color);
+        }
+
+        .delete-btn:hover {
+            background: rgba(220, 53, 69, 0.3);
+            color: var(--error-color);
+        }
+
+        /* Reply Input Box */
+        .reply-box {
+            display: none;
+            background: rgba(23, 162, 184, 0.1);
+            border: 1px solid rgba(23, 162, 184, 0.3);
+            border-radius: 10px;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+        }
+
+        .reply-box.show {
+            display: block;
+        }
+
+        .reply-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .reply-label {
+            color: var(--info-color);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .cancel-reply {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: default;
+            font-size: 1rem;
+            transition: color 0.3s ease;
+        }
+
+        .cancel-reply:hover {
+            color: var(--error-color);
+        }
+
+        .reply-preview {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px;
+            border-radius: 6px;
+            border-right: 3px solid var(--info-color);
+        }
+
+        .reply-preview-author {
+            color: var(--info-color);
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .reply-preview-text {
+            color: #bbb;
+            font-size: 0.8rem;
+            font-style: italic;
+        }
+
+        /* System Messages */
+        .system-message {
+            text-align: center;
+            margin: 20px 0;
+            padding: 10px;
+            background: rgba(23, 162, 184, 0.1);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: var(--info-color);
+            border: 1px solid rgba(23, 162, 184, 0.2);
+        }
+
+        /* Chat Input */
+        .chat-input {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .input-container {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .message-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 15px 20px;
+            color: var(--text-dark);
+            font-family: 'Harmattan', sans-serif;
+            font-size: 1rem;
+            resize: none;
+            min-height: 50px;
+            max-height: 120px;
+            transition: all 0.3s ease;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 15px rgba(229, 9, 20, 0.3);
+        }
+
+        .message-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .send-btn {
+            background: linear-gradient(45deg, var(--primary-color), #ff6b6b);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: default;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(229, 9, 20, 0.4);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Empty State */
+        .empty-chat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #888;
+            text-align: center;
+        }
+
+        .empty-chat i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-chat h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .empty-chat p {
+            font-size: 1rem;
+            max-width: 400px;
+            line-height: 1.6;
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            z-index: 10000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            font-family: 'Harmattan', sans-serif;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: var(--success-color);
+        }
+
+        .notification.error {
+            background: var(--error-color);
+        }
+
+        .notification.warning {
+            background: var(--warning-color);
+            color: #000;
+        }
+
+        .notification.info {
+            background: var(--info-color);
+        }
+
+        /* Loading States */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                right: 0;
+                height: 100vh;
+                z-index: 1000;
+                width: 280px;
+            }
+
+            .sidebar.hidden {
+                transform: translateX(100%);
+            }
+
+            .toggle-sidebar {
+                display: block;
+            }
+
+            .chat-main {
+                width: 100%;
+            }
+
+            .message {
+                max-width: 85%;
+            }
+
+            .message.own {
+                margin-left: 15%;
+            }
+
+            .message.other {
+                margin-right: 15%;
+            }
+
+            .notification {
+                right: 10px;
+                left: 10px;
+                transform: translateY(-100px);
+            }
+
+            .notification.show {
+                transform: translateY(0);
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Status Indicator -->
+    <div class="admin-status" id="adminStatus">
+        ادمن
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">جاري إرسال الرسالة...</div>
+            <div class="loading-subtext">يرجى الانتظار</div>
+        </div>
+    </div>
+
+    <div class="chat-container">
+        <!-- Sidebar -->
+        <div id="sidebar" class="sidebar hidden">
+            <!-- Header -->
+            <div class="chat-header">
+                <div class="header-info">
+                    <a class="back-btn" onclick="window.location.href='go:home'">
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <div class="chat-title">الدردشة الجماعية</div>
+                </div>
+                <button class="toggle-sidebar" id="toggleSidebar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Online Users -->
+            <div class="online-users">
+                <div class="users-title">
+                    <i class="fas fa-users"></i>
+                    المتصلون الآن (<span id="onlineCount">0</span>)
+                </div>
+                <div class="users-list" id="usersList">
+                    <!-- سيتم ملؤها بـ JavaScript -->
+                </div>
+            </div>
+
+            <!-- Chat Rules -->
+            <div class="chat-rules">
+                <div class="rules-title">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    قوانين الدردشة
+                </div>
+                <ul class="rules-list">
+                    <li>احترم جميع الأعضاء وكن مهذباً</li>
+                    <li>لا تستخدم لغة غير لائقة أو مسيئة</li>
+                    <li>تجنب الإسبام والرسائل المتكررة</li>
+                    <li>ناقش الأنمي والمواضيع ذات الصلة</li>
+                    <li>لا تشارك روابط مشبوهة</li>
+                    <li>استخدم اللغة العربية أو الإنجليزية</li>
+                    <li>كن صبوراً مع الأعضاء الجدد</li>
+                    <li>الرسائل تظهر فوراً بدون الحاجة للتحديث</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="chat-main">
+            <!-- Toggle Sidebar Button (Mobile) -->
+            <button class="toggle-sidebar" id="toggleSidebarMobile" style="position: absolute; top: 20px; right: 20px; z-index: 100; display: none;">
+                <i class="fas fa-users"></i>
+            </button>
+
+            <!-- Chat Messages -->
+            <div class="chat-messages" id="chatMessages">
+                <div class="empty-chat" id="emptyChat">
+                    <i class="fas fa-comments"></i>
+                    <h3>مرحباً بك في الدردشة الجماعية!</h3>
+                    <p>ابدأ محادثة مع محبي الأنمي من جميع أنحاء العالم. شارك آراءك وتوصياتك واستمتع بالنقاش!</p>
+                </div>
+            </div>
+<div id="chatMessages"></div>
+<div id="emptyChat" style="display: none; text-align: center; padding: 20px;">
+    لا توجد رسائل بعد ✉️
+</div>
+            <!-- Chat Input -->
+            <div class="chat-input">
+                <!-- Reply Box -->
+                <div class="reply-box" id="replyBox">
+                    <div class="reply-header">
+                        <span class="reply-label">الرد على:</span>
+                        <button class="cancel-reply" onclick="cancelReply()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="reply-preview" id="replyPreview">
+                        <!-- سيتم ملؤها بـ JavaScript -->
+                    </div>
+                </div>
+
+                <div class="input-container">
+                    <textarea 
+                        class="message-input" 
+                        id="messageInput" 
+                        placeholder="اكتب رسالتك هنا..."
+                        rows="1"
+                        maxlength="500"
+                    ></textarea>
+                    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notificationContainer"></div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCHW1djAZjxuxUZgtB86gJzODRCg9ka_ZI",
+            authDomain: "kodotoon-ad809.firebaseapp.com",
+            projectId: "kodotoon-ad809",
+            storageBucket: "kodotoon-ad809.firebasestorage.app",
+            messagingSenderId: "553344511122",
+            appId: "1:553344511122:web:ac7ce2ee0262c310104a4b",
+            measurementId: "G-6SJXT2LLPR"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        // Global Variables
+        let currentUser = null;
+        let messages = [];
+        let onlineUsers = [];
+        let messagesListener = null;
+        let usersListener = null;
+        let replyTarget = null;
+        let isAdmin = false;
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('💬 بدء تشغيل الدردشة...');
+            initializeChat();
+        });
+
+        async function initializeChat() {
+            try {
+                showLoadingOverlay('جاري تحميل الدردشة...', 'يرجى الانتظار');
+                
+                // Initialize Firebase Auth
+                await initializeAuth();
+                
+                // Setup chat listeners
+                setupChatListeners();
+                
+                // Setup event listeners
+                setupEventListeners();
+                
+                // Load initial data
+                loadMessages();
+                loadOnlineUsers();
+                
+                hideLoadingOverlay();
+                console.log('✅ تم تهيئة الدردشة بنجاح!');
+                showNotification('مرحباً بك في الدردشة الجماعية! 💬', 'success');
+                
+            } catch (error) {
+                console.error('❌ خطأ في تهيئة الدردشة:', error);
+                hideLoadingOverlay();
+                showNotification('حدث خطأ في تحميل الدردشة', 'error');
+            }
+        }
+
+        // Show/Hide Loading Overlay
+        function showLoadingOverlay(text = 'جاري التحميل...', subtext = 'يرجى الانتظار') {
+            const overlay = document.getElementById('loadingOverlay');
+            const textElement = overlay.querySelector('.loading-text');
+            const subtextElement = overlay.querySelector('.loading-subtext');
+            
+            textElement.textContent = text;
+            subtextElement.textContent = subtext;
+            overlay.style.display = 'flex';
+        }
+
+        function hideLoadingOverlay() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        // Initialize Firebase Authentication
+        async function initializeAuth() {
+            return new Promise((resolve) => {
+                auth.onAuthStateChanged(async (user) => {
+                    if (user) {
+                        currentUser = user;
+                        await loadUserProfile();
+                        await checkAdminStatus();
+                        updateUserPresence(true);
+                        
+                        if (!user.isAnonymous) {
+                            console.log('✅ مستخدم مسجل:', user.displayName || user.email);
+                        } else {
+                            console.log('👤 مستخدم ضيف');
+                        }
+                    } else {
+                        // Auto sign in anonymously for guest access
+                        try {
+                            const result = await auth.signInAnonymously();
+                            currentUser = result.user;
+                            console.log('✅ تم تسجيل الدخول كضيف');
+                        } catch (error) {
+                            console.error('❌ خطأ في تسجيل الدخول:', error);
+                        }
+                    }
+                    resolve();
+                });
+            });
+        }
+
+        // Load User Profile
+        async function loadUserProfile() {
+            if (!currentUser || currentUser.isAnonymous) return;
+            
+            try {
+                const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                if (userDoc.exists) {
+                    currentUser.firestoreData = userDoc.data();
+                    console.log('📋 بيانات المستخدم:', currentUser.firestoreData);
+                } else {
+                    console.log('⚠️ لا توجد بيانات للمستخدم في Firestore');
+                }
+            } catch (error) {
+                console.error('خطأ في تحميل الملف الشخصي:', error);
+            }
+        }
+
+        // Check Admin Status - محسن للتحقق من اسم المستخدم أيضاً
+        async function checkAdminStatus() {
+            if (!currentUser) {
+                isAdmin = false;
+                return;
+            }
+            
+            try {
+                // التحقق من المستخدمين المسجلين
+                if (!currentUser.isAnonymous) {
+                    const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        console.log('🔍 فحص بيانات المستخدم:', userData);
+                        
+                        // التحقق من الـ role أو اسم المستخدم
+                        isAdmin = userData.role === 'admin' || 
+                                 userData.displayName === 'wrixuu' || 
+                                 userData.username === 'wrixuu';
+                        
+                        console.log('🔑 حالة الأدمن:', isAdmin);
+                        console.log('👤 اسم المستخدم:', userData.displayName || userData.username);
+                        console.log('🎭 الدور:', userData.role);
+                    }
+                }
+                
+                // التحقق من المستخدمين الضيوف أيضاً (في حالة كان الأدمن ضيف)
+                const displayName = currentUser.displayName || '';
+                if (displayName === 'wrixuu') {
+                    isAdmin = true;
+                    console.log('🔑 تم التعرف على الأدمن من اسم العرض');
+                }
+                
+                // إظهار مؤشر الأدمن
+                const adminStatus = document.getElementById('adminStatus');
+                if (isAdmin) {
+                    adminStatus.classList.add('show');
+                    showNotification('مرحباً أيها الأدمن! 👑', 'warning');
+                } else {
+                    adminStatus.classList.remove('show');
+                }
+                
+            } catch (error) {
+                console.error('خطأ في التحقق من حالة الأدمن:', error);
+                isAdmin = false;
+            }
+        }
+
+        // Update User Presence
+        async function updateUserPresence(isOnline) {
+            if (!currentUser) return;
+            
+            try {
+                const userData = currentUser.firestoreData || {};
+                const userName = userData.displayName || currentUser.displayName || 'مستخدم';
+                
+                if (isOnline) {
+                    await db.collection('chatUsers').doc(currentUser.uid).set({
+                        userId: currentUser.uid,
+                        userName: userName,
+                        userAvatar: userData.avatar || '',
+                        role: userData.role || 'user',
+                        isOnline: true,
+                        lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                } else {
+                    await db.collection('chatUsers').doc(currentUser.uid).update({
+                        isOnline: false,
+                        lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+            } catch (error) {
+                console.error('خطأ في تحديث حالة المستخدم:', error);
+            }
+        }
+
+        // Setup Chat Listeners - محسن للعرض الفوري
+        function setupChatListeners() {
+            // Listen for messages with real-time updates
+            messagesListener = db.collection('chatMessages')
+                .orderBy('createdAt', 'asc') // تغيير إلى asc للترتيب الصحيح
+                .limit(100) // زيادة العدد
+                .onSnapshot((snapshot) => {
+                    console.log('📨 تحديث الرسائل - عدد التغييرات:', snapshot.docChanges().length);
+                    
+                    // تحديث قائمة الرسائل بالكامل
+                    messages = [];
+                    snapshot.forEach((doc) => {
+                        messages.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    });
+                    
+                    console.log('📋 إجمالي الرسائل:', messages.length);
+                    renderMessages();
+                    
+                    // التمرير للأسفل عند وجود رسائل جديدة
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === 'added') {
+                            console.log('➕ رسالة جديدة:', change.doc.data().text);
+                            setTimeout(() => scrollToBottom(), 100);
+                        }
+                    });
+                    
+                }, (error) => {
+                    console.error('خطأ في تحميل الرسائل:', error);
+                    showNotification('خطأ في تحميل الرسائل', 'error');
+                });
+
+            // Listen for online users
+            usersListener = db.collection('chatUsers')
+                .where('isOnline', '==', true)
+                .onSnapshot((snapshot) => {
+                    onlineUsers = [];
+                    snapshot.forEach((doc) => {
+                        onlineUsers.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    });
+                    renderOnlineUsers();
+                }, (error) => {
+                    console.error('خطأ في تحميل المستخدمين:', error);
+                });
+        }
+
+        // Load Messages
+        function loadMessages() {
+            // Messages are loaded via listener
+        }
+
+        // Load Online Users
+        function loadOnlineUsers() {
+            // Users are loaded via listener
+        }
+
+        // Render Messages - محسن لإظهار أزرار الحذف للأدمن
+        function renderMessages() {
+            const chatMessages = document.getElementById('chatMessages');
+            const emptyChat = document.getElementById('emptyChat');
+            
+            if (messages.length === 0) {
+                emptyChat.style.display = 'flex';
+                return;
+            }
+            
+            emptyChat.style.display = 'none';
+            
+            chatMessages.innerHTML = messages.map(message => {
+                const isOwn = message.userId === currentUser?.uid;
+                const messageTime = formatMessageTime(message.createdAt);
+                const isMessageAdmin = message.userRole === 'admin';
+                
+                // Reply content
+                let replyContent = '';
+                if (message.replyTo) {
+                    replyContent = `
+                        <div class="reply-to">
+                            <div class="reply-author">${message.replyTo.userName}</div>
+                            <div class="reply-text">${message.replyTo.text}</div>
+                        </div>
+                    `;
+                }
+                
+                // Message actions - تحسين عرض أزرار الأدمن
+                let actionsContent = '';
+                if (currentUser) {
+                    actionsContent = `
+                        <div class="message-actions">
+                            <button class="action-btn reply-btn" onclick="replyToMessage('${message.id}', '${message.userName}', \`${message.text.replace(/`/g, '\\`').replace(/'/g, "\\'")}\`)">
+                                <i class="fas fa-reply"></i>
+                                رد
+                            </button>
+                            ${isAdmin ? `
+                                <button class="action-btn delete-btn" onclick="deleteMessage('${message.id}')">
+                                    <i class="fas fa-trash"></i>
+                                    حذف
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                }
+                
+                return `
+                    <div class="message ${isOwn ? 'own' : 'other'}">
+                        <div class="message-header">
+                            <div class="message-avatar">
+                                ${message.userAvatar ? 
+                                    `<img src="${message.userAvatar}" alt="Avatar">` : 
+                                    `<span>${message.userName.charAt(0).toUpperCase()}</span>`
+                                }
+                            </div>
+                            <div class="message-info">
+                                <div class="message-author ${isOwn ? 'current-user' : ''} ${isMessageAdmin ? 'admin' : ''}">
+                                    ${message.userName}
+                                    ${isMessageAdmin ? '<span class="admin-badge">أدمن</span>' : ''}
+                                </div>
+                                <div class="message-time">${messageTime}</div>
+                            </div>
+                        </div>
+                        ${replyContent}
+                        <div class="message-content">${message.text}</div>
+                        ${actionsContent}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function scrollToBottom() {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Render Online Users
+        function renderOnlineUsers() {
+            const usersList = document.getElementById('usersList');
+            const onlineCount = document.getElementById('onlineCount');
+            
+            onlineCount.textContent = onlineUsers.length;
+            
+            usersList.innerHTML = onlineUsers.map(user => {
+                const isCurrentUser = user.userId === currentUser?.uid;
+                const isUserAdmin = user.role === 'admin' || user.userName === 'wrixuu';
+                
+                return `
+                    <div class="user-item">
+                        <div class="user-avatar">
+                            ${user.userAvatar ? 
+                                `<img src="${user.userAvatar}" alt="Avatar">` : 
+                                `<span>${user.userName.charAt(0).toUpperCase()}</span>`
+                            }
+                            <div class="user-status"></div>
+                        </div>
+                        <div class="user-name ${isCurrentUser ? 'current-user' : ''} ${isUserAdmin ? 'admin' : ''}">
+                            ${user.userName}
+                            ${isUserAdmin ? '<span class="admin-badge">أدمن</span>' : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Reply to Message
+        function replyToMessage(messageId, userName, messageText) {
+            replyTarget = {
+                id: messageId,
+                userName: userName,
+                text: messageText
+            };
+            
+            const replyBox = document.getElementById('replyBox');
+            const replyPreview = document.getElementById('replyPreview');
+            
+            replyPreview.innerHTML = `
+                <div class="reply-preview-author">${userName}</div>
+                <div class="reply-preview-text">${messageText.length > 50 ? messageText.substring(0, 50) + '...' : messageText}</div>
+            `;
+            
+            replyBox.classList.add('show');
+            document.getElementById('messageInput').focus();
+            
+            showNotification('تم تحديد الرسالة للرد عليها 💬', 'info');
+        }
+
+        // Cancel Reply
+        function cancelReply() {
+            replyTarget = null;
+            document.getElementById('replyBox').classList.remove('show');
+        }
+
+        // Delete Message (Admin Only) - محسن مع تأكيد أفضل
+        async function deleteMessage(messageId) {
+            console.log('🗑️ محاولة حذف الرسالة - هل المستخدم أدمن؟', isAdmin);
+            
+            if (!isAdmin) {
+                showNotification('ليس لديك صلاحية لحذف الرسائل 🚫', 'error');
+                console.log('❌ المستخدم ليس أدمن');
+                return;
+            }
+            
+            const confirmDelete = confirm('⚠️ تأكيد الحذف\n\nهل أنت متأكد من حذف هذه الرسالة؟\nلا يمكن التراجع عن هذا الإجراء.\n\nاضغط موافق للحذف أو إلغاء للتراجع.');
+            
+            if (!confirmDelete) {
+                console.log('❌ تم إلغاء الحذف');
+                return;
+            }
+            
+            try {
+                console.log('🗑️ جاري حذف الرسالة:', messageId);
+                await db.collection('chatMessages').doc(messageId).delete();
+                showNotification('تم حذف الرسالة بنجاح 🗑️', 'success');
+                console.log('✅ تم حذف الرسالة بنجاح:', messageId);
+            } catch (error) {
+                console.error('❌ خطأ في حذف الرسالة:', error);
+                showNotification('حدث خطأ في حذف الرسالة ⚠️', 'error');
+            }
+        }
+
+        // Send Message - محسن للعرض الفوري
+        async function sendMessage() {
+            if (!currentUser) {
+                showNotification('يرجى تسجيل الدخول أولاً 🔐', 'warning');
+                return;
+            }
+
+            const messageInput = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const messageText = messageInput.value.trim();
+            
+            if (!messageText) {
+                showNotification('يرجى كتابة رسالة أولاً ✍️', 'warning');
+                return;
+            }
+
+            if (messageText.length > 500) {
+                showNotification('الرسالة طويلة جداً (الحد الأقصى 500 حرف) 📝', 'warning');
+                return;
+            }
+
+            // تعطيل الزر وإظهار التحميل
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<div class="loading"></div>';
+            
+            // مسح النص من الإدخال فوراً
+            const originalText = messageText;
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+
+            try {
+                const userData = currentUser.firestoreData || {};
+                const userName = userData.displayName || currentUser.displayName || 'مستخدم';
+                
+                const messageData = {
+                    userId: currentUser.uid,
+                    userName: userName,
+                    userAvatar: userData.avatar || '',
+                    userRole: userData.role || 'user',
+                    text: originalText,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                // إضافة معلومات الرد إذا كانت موجودة
+                if (replyTarget) {
+                    messageData.replyTo = {
+                        messageId: replyTarget.id,
+                        userName: replyTarget.userName,
+                        text: replyTarget.text
+                    };
+                    
+                    // إلغاء الرد
+                    cancelReply();
+                }
+
+                // إرسال الرسالة مباشرة
+                console.log('📤 إرسال رسالة:', messageData);
+                await db.collection('chatMessages').add(messageData);
+                
+                console.log('✅ تم إرسال الرسالة بنجاح');
+                showNotification('تم إرسال الرسالة! ', 'success');
+                
+            } catch (error) {
+                console.error('❌ خطأ في إرسال الرسالة:', error);
+                
+                // إعادة النص في حالة الخطأ
+                messageInput.value = originalText;
+                
+                showNotification('حدث خطأ في إرسال الرسالة، يرجى المحاولة مرة أخرى ⚠️', 'error');
+            } finally {
+                // إعادة تفعيل الزر
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+            }
+        }
+
+        // Format Message Time
+        function formatMessageTime(timestamp) {
+            if (!timestamp) return 'الآن';
+            
+            let date;
+            if (timestamp.toDate) {
+                date = timestamp.toDate();
+            } else if (timestamp instanceof Date) {
+                date = timestamp;
+            } else {
+                date = new Date(timestamp);
+            }
+            
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffMinutes = Math.ceil(diffTime / (1000 * 60));
+            const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
+            
+            if (diffMinutes < 1) {
+                return 'الآن';
+            } else if (diffMinutes < 60) {
+                return `منذ ${diffMinutes} دقيقة`;
+            } else if (diffHours < 24) {
+                return `منذ ${diffHours} ساعة`;
+            } else {
+                return date.toLocaleDateString('ar-SA');
+            }
+        }
+
+        // Show Notification
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            const container = document.getElementById('notificationContainer');
+            container.appendChild(notification);
+            
+            // Show notification
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            // Hide notification
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 300);
+            }, 4000);
+            
+            console.log(`📢 إشعار (${type}): ${message}`);
+        }
+
+        // Setup Event Listeners
+        function setupEventListeners() {
+            const messageInput = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendBtn');
+            
+            // Auto-resize textarea
+            messageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
+
+            // Send message on Enter
+            messageInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // Toggle sidebar on mobile
+            const toggleSidebar = document.getElementById('toggleSidebar');
+            const toggleSidebarMobile = document.getElementById('toggleSidebarMobile');
+            const sidebar = document.getElementById('sidebar');
+            
+            if (window.innerWidth <= 768) {
+                toggleSidebarMobile.style.display = 'block';
+            }
+
+            toggleSidebar.addEventListener('click', function() {
+                sidebar.classList.toggle('hidden');
+            });
+
+            toggleSidebarMobile.addEventListener('click', function() {
+                sidebar.classList.toggle('hidden');
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth <= 768) {
+                    toggleSidebarMobile.style.display = 'block';
+                } else {
+                    toggleSidebarMobile.style.display = 'none';
+                    sidebar.classList.remove('hidden');
+                }
+            });
+
+            // Handle page visibility change
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    updateUserPresence(false);
+                } else {
+                    updateUserPresence(true);
+                }
+            });
+
+            // Handle page unload
+            window.addEventListener('beforeunload', function() {
+                updateUserPresence(false);
+            });
+
+            console.log('✅ تم إعداد مستمعي الأحداث');
+        }
+
+        // Enhanced error handling
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('رفض Promise غير معالج:', event.reason);
+        });
+
+        window.addEventListener('error', function(event) {
+            console.error('خطأ JavaScript:', event.error);
+        });
+
+        console.log('💬 تم تحميل صفحة الدردشة بنجاح!');
+        console.log('🔥 Firebase متصل وجاهز للاستخدام');
+        console.log('👥 نظام المستخدمين المتصلين يعمل');
+        console.log('📨 نظام الرسائل يعمل مع العرض الفوري');
+        console.log('🔑 نظام الأدمن محسن للتحقق من wrixuu');
+        console.log('💬 ميزة الرد على الرسائل مفعلة');
+        console.log('🗑️ ميزة حذف الرسائل للأدمن مفعلة');
+        console.log('🎌 الدردشة الجماعية جاهزة مع العرض الفوري!');
+    </script>
+</body>
+</html>
