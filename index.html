@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Harmattan:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
-    <!-- Firebase SDK -->
+    
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     
@@ -38,7 +38,7 @@
             position: relative;
         }
 
-        /* خلفية متحركة */
+        
         body::before {
             content: '';
             position: fixed;
@@ -61,7 +61,7 @@
             75% { transform: translateX(-10px) translateY(20px); }
         }
 
-        /* Header */
+        
         .header {
             position: fixed;
             top: 0;
@@ -104,7 +104,7 @@
             -webkit-text-fill-color: transparent;
         }
 
-        /* Main Container */
+        
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -115,7 +115,7 @@
             justify-content: center;
         }
 
-        /* Hero Section */
+        
         .hero-section {
             text-align: center;
             max-width: 800px;
@@ -183,7 +183,7 @@
             margin-right: auto;
         }
 
-        /* Features */
+        
         .features {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -223,7 +223,7 @@
             line-height: 1.6;
         }
 
-        /* Download Section */
+        
         .download-section {
             background: rgba(255, 255, 255, 0.05);
             padding: 40px;
@@ -318,7 +318,7 @@
             font-size: 1.1rem;
         }
 
-        /* Download Button */
+        
         .download-btn {
             background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
             color: var(--text-light);
@@ -382,7 +382,7 @@
             background: linear-gradient(135deg, var(--success-color), #4caf50);
         }
 
-        /* Requirements */
+        
         .requirements {
             background: rgba(0, 0, 0, 0.2);
             padding: 30px;
@@ -416,7 +416,7 @@
             font-size: 1.2rem;
         }
 
-        /* Footer */
+        
         .footer {
             text-align: center;
             padding: 30px 20px;
@@ -457,7 +457,7 @@
             border-color: var(--accent-color);
         }
 
-        /* Loading Animation */
+       
         .loading-spinner {
             width: 20px;
             height: 20px;
@@ -473,12 +473,8 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Notification */
- 
-
         
-
-        /* Responsive Design */
+        
         @media (max-width: 768px) {
             .app-title {
                 font-size: 2.5rem;
@@ -530,7 +526,7 @@
             }
         }
 
-        /* Animations */
+        
         @keyframes fadeInUp {
             from {
                 opacity: 0;
@@ -546,7 +542,7 @@
             animation: fadeInUp 0.8s ease forwards;
         }
 
-        /* Particles Effect */
+        
         .particles {
             position: fixed;
             top: 0;
@@ -584,20 +580,36 @@
             }
         }
 
-        /* إخفاء العناصر الخضراء */
+       
         .green-element,
         [style*="green"],
         [style*="#28a745"],
         [style*="#20c997"] {
             display: none !important;
         }
+
+        
+        .error-state {
+            text-align: center;
+            color: #ff6b6b;
+            padding: 20px;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            margin: 20px 0;
+        }
+
+        .error-state i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
-    <!-- Particles Background -->
+    
     <div class="particles" id="particles"></div>
 
-    <!-- Header -->
+    
     <header class="header">
         <div class="header-content">
             <div class="logo-header">
@@ -607,22 +619,22 @@
         </div>
     </header>
 
-    <!-- Main Container -->
+    
     <div class="container">
         <div class="hero-section">
-            <!-- App Logo -->
+            
             <img src="https://archive.org/download/img-20250730-162120-645/IMG_20250730_162120_645.jpg" alt="AniHost App" class="app-logo">
 
-            <!-- App Title -->
+            
             <h1 class="app-title fade-in-up">AniHost</h1>
 
-            <!-- App Description -->
+            
             <p class="app-description fade-in-up">
                 أفضل تطبيق لمشاهدة الأنمي بجودة عالية مع مكتبة ضخمة من أحدث وأفضل الأنمي. 
                 استمتع بتجربة مشاهدة سلسة ومميزة مع واجهة عربية احترافية.
             </p>
 
-            <!-- Features -->
+            
             <div class="features fade-in-up">
                 <div class="feature">
                     <i class="fas fa-play-circle"></i>
@@ -646,7 +658,7 @@
                 </div>
             </div>
 
-            <!-- Download Section -->
+            
             <div class="download-section fade-in-up">
                 <div class="download-info">
                     <div class="app-details">
@@ -658,7 +670,7 @@
                         </div>
                     </div>
                     <div class="download-stats">
-                        <span class="download-count" id="downloadCount">0</span>
+                        <span class="download-count" id="downloadCount">جاري التحميل...</span>
                         <div class="download-label">تحميل</div>
                     </div>
                 </div>
@@ -670,7 +682,7 @@
                 </a>
             </div>
 
-            <!-- Requirements -->
+           
             <div class="requirements fade-in-up">
                 <h3>متطلبات التشغيل</h3>
                 <div class="req-list">
@@ -695,7 +707,7 @@
         </div>
     </div>
 
-    <!-- Footer -->
+    
     <footer class="footer">
         <p>&copy; 2024 AniHost. جميع الحقوق محفوظة.</p>
         <p>تطبيق مجاني لمشاهدة الأنمي</p>
@@ -703,37 +715,37 @@
             <a href="https://t.me/AniHostcontact" class="social-link" title="تليجرام">
                 <i class="fab fa-telegram"></i>
             </a>
-            
         </div>
     </footer>
 
-    <!-- Notification -->
+    
     <div class="notification" id="notification"></div>
 
     <script>
-        // Firebase Configuration (نفس الإعدادات من كود المشاهدة)
+        
         const firebaseConfig = {
-            apiKey: "AIzaSyCHW1djAZjxuxUZgtB86gJzODRCg9ka_ZI",
-            authDomain: "kodotoon-ad809.firebaseapp.com",
-            projectId: "kodotoon-ad809",
-            storageBucket: "kodotoon-ad809.firebasestorage.app",
-            messagingSenderId: "553344511122",
-            appId: "1:553344511122:web:ac7ce2ee0262c310104a4b",
-            measurementId: "G-6SJXT2LLPR"
+            apiKey: "AIzaSyBHaEQTGKumgxPpgndSc4cy8bz4Qlrcckc",
+            authDomain: "kodotoon-9586b.firebaseapp.com",
+            projectId: "kodotoon-9586b",
+            storageBucket: "kodotoon-9586b.firebasestorage.app",
+            messagingSenderId: "532393325104",
+            appId: "1:532393325104:web:d0469921402753487bb3f5",
+            measurementId: "G-8NL75DDJX7"
         };
 
-        // Initialize Firebase
+        
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // App Download URL
+        
         const APP_DOWNLOAD_URL = 'https://ia601008.us.archive.org/29/items/ani-host/AniHost.apk';
 
-        // Global Variables
+        
         let downloadCount = 0;
         let isDownloading = false;
+        let isFirebaseConnected = false;
 
-        // Initialize App
+        
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 تحميل موقع AniHost...');
             initializeApp();
@@ -749,36 +761,80 @@
             } catch (error) {
                 console.error('❌ خطأ في تحميل الموقع:', error);
                 showNotification('حدث خطأ في تحميل الموقع', 'error');
+                handleFirebaseError();
             }
         }
 
-        // Load Download Count from Firebase
+        // Load Download Count from Firebase ONLY
         async function loadDownloadCount() {
+            const countElement = document.getElementById('downloadCount');
+            
             try {
+                console.log('🔄 جاري تحميل العداد من Firebase...');
+                
                 const doc = await db.collection('appStats').doc('downloads').get();
+                
                 if (doc.exists) {
                     downloadCount = doc.data().count || 0;
+                    isFirebaseConnected = true;
+                    console.log(`✅ تم تحميل العداد: ${downloadCount}`);
                 } else {
                     // إنشاء المستند إذا لم يكن موجوداً
+                    console.log('📝 إنشاء مستند العداد الجديد...');
                     await db.collection('appStats').doc('downloads').set({
                         count: 0,
-                        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                        lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     downloadCount = 0;
+                    isFirebaseConnected = true;
+                    console.log('✅ تم إنشاء العداد الجديد');
                 }
+                
                 updateDownloadCountDisplay();
+                
             } catch (error) {
-                console.error('خطأ في تحميل عدد التحميلات:', error);
-                // استخدام localStorage كبديل
-                downloadCount = parseInt(localStorage.getItem('anihost_downloads') || '0');
-                updateDownloadCountDisplay();
+                console.error('❌ خطأ في تحميل عدد التحميلات من Firebase:', error);
+                isFirebaseConnected = false;
+                handleFirebaseError();
+                throw error;
             }
         }
 
-        // Update Download Count Display
+        // Handle Firebase Connection Error
+        function handleFirebaseError() {
+            const countElement = document.getElementById('downloadCount');
+            countElement.innerHTML = `
+                <div class="error-state">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>خطأ في الاتصال</div>
+                </div>
+            `;
+            
+            
+            const downloadBtn = document.getElementById('downloadBtn');
+            downloadBtn.style.opacity = '0.7';
+            downloadBtn.style.pointerEvents = 'none';
+            
+            
+            setTimeout(async () => {
+                try {
+                    await loadDownloadCount();
+                    downloadBtn.style.opacity = '1';
+                    downloadBtn.style.pointerEvents = 'auto';
+                    showNotification('تم استعادة الاتصال بقاعدة البيانات 🔄', 'success');
+                } catch (error) {
+                    console.error('فشل في إعادة الاتصال:', error);
+                }
+            }, 5000);
+        }
+
+        
         function updateDownloadCountDisplay() {
             const countElement = document.getElementById('downloadCount');
-            countElement.textContent = formatNumber(downloadCount);
+            if (isFirebaseConnected) {
+                countElement.textContent = formatNumber(downloadCount);
+            }
         }
 
         // Format Number (add commas)
@@ -788,40 +844,46 @@
 
         // Handle Download Button Click
         async function handleDownload() {
-            if (isDownloading) return;
+            if (isDownloading || !isFirebaseConnected) {
+                if (!isFirebaseConnected) {
+                    showNotification('خطأ في الاتصال بقاعدة البيانات، يرجى المحاولة لاحقاً', 'error');
+                }
+                return;
+            }
 
             isDownloading = true;
             const downloadBtn = document.getElementById('downloadBtn');
             const downloadText = document.getElementById('downloadText');
             const loadingSpinner = document.getElementById('loadingSpinner');
 
-            // تغيير حالة الزر
+            
             downloadBtn.classList.add('downloading');
             downloadText.textContent = 'جاري التحضير...';
             loadingSpinner.style.display = 'inline-block';
 
             try {
-                // زيادة عداد التحميلات
-                downloadCount++;
+                console.log('🔄 بدء عملية التحميل...');
                 
-                // تحديث Firebase
+               
+                const newCount = downloadCount + 1;
+                
                 await db.collection('appStats').doc('downloads').update({
-                    count: downloadCount,
+                    count: newCount,
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                // تحديث localStorage كنسخة احتياطية
-                localStorage.setItem('anihost_downloads', downloadCount.toString());
-
-                // تحديث العرض
+ 
+                downloadCount = newCount;
                 updateDownloadCountDisplay();
+                
+                console.log(`✅ تم تحديث العداد إلى: ${downloadCount}`);
 
-                // محاكاة وقت التحضير
+            
                 setTimeout(() => {
                     downloadText.textContent = 'بدء التحميل...';
                     
                     setTimeout(() => {
-                        // بدء التحميل الفعلي
+                  
                         const link = document.createElement('a');
                         link.href = APP_DOWNLOAD_URL;
                         link.download = 'AniHost.apk';
@@ -829,7 +891,7 @@
                         link.click();
                         document.body.removeChild(link);
 
-                        // تغيير حالة الزر إلى مكتمل
+               
                         downloadBtn.classList.remove('downloading');
                         downloadBtn.classList.add('downloaded');
                         downloadText.textContent = 'تم بدء التحميل!';
@@ -837,7 +899,7 @@
 
                         showNotification('تم بدء تحميل التطبيق بنجاح! 🎉', 'success');
 
-                        // إعادة تعيين الزر بعد 3 ثوانٍ
+                        
                         setTimeout(() => {
                             downloadBtn.classList.remove('downloaded');
                             downloadText.textContent = 'تحميل التطبيق';
@@ -848,30 +910,24 @@
                 }, 1500);
 
             } catch (error) {
-                console.error('خطأ في تحديث عداد التحميلات:', error);
+                console.error('❌ خطأ في تحديث عداد التحميلات:', error);
                 
-                // في حالة الخطأ، استخدم localStorage فقط
-                localStorage.setItem('anihost_downloads', downloadCount.toString());
-                updateDownloadCountDisplay();
-
-                // بدء التحميل رغم الخطأ
-                const link = document.createElement('a');
-                link.href = APP_DOWNLOAD_URL;
-                link.download = 'AniHost.apk';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
+                
                 downloadBtn.classList.remove('downloading');
                 downloadText.textContent = 'تحميل التطبيق';
                 loadingSpinner.style.display = 'none';
                 isDownloading = false;
 
-                showNotification('تم بدء التحميل (مع خطأ في العداد)', 'success');
+                showNotification('حدث خطأ في تحديث العداد، يرجى المحاولة مرة أخرى', 'error');
+                
+                
+                setTimeout(() => {
+                    loadDownloadCount().catch(console.error);
+                }, 2000);
             }
         }
 
-        // Show Notification
+        
         function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
             notification.textContent = message;
@@ -886,7 +942,7 @@
             }, 4000);
         }
 
-        // Setup Event Listeners
+        
         function setupEventListeners() {
             const downloadBtn = document.getElementById('downloadBtn');
             downloadBtn.addEventListener('click', function(e) {
@@ -894,7 +950,7 @@
                 handleDownload();
             });
 
-            // Animate elements on scroll
+            
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
@@ -908,7 +964,7 @@
             });
         }
 
-        // Create Particles Effect
+        
         function createParticles() {
             const particlesContainer = document.getElementById('particles');
             const particleCount = 50;
@@ -923,9 +979,9 @@
             }
         }
 
-        // Animate Elements
+        
         function animateElements() {
-            // تأثير الكتابة للعنوان
+            
             const title = document.querySelector('.app-title');
             const text = title.textContent;
             title.textContent = '';
@@ -941,8 +997,10 @@
             
             setTimeout(typeWriter, 1000);
 
-            // تحديث عداد التحميلات بشكل متحرك
-            animateCounter();
+            
+            if (isFirebaseConnected) {
+                animateCounter();
+            }
         }
 
         // Animate Counter
@@ -951,6 +1009,7 @@
             const target = downloadCount;
             let current = 0;
             const increment = target / 50;
+            
             const timer = setInterval(() => {
                 current += increment;
                 if (current >= target) {
@@ -962,13 +1021,42 @@
         }
 
         // Handle Online/Offline Status
-        window.addEventListener('online', () => {
+        window.addEventListener('online', async () => {
             showNotification('تم استعادة الاتصال بالإنترنت 🌐', 'success');
+            
+            
+            try {
+                await loadDownloadCount();
+                const downloadBtn = document.getElementById('downloadBtn');
+                downloadBtn.style.opacity = '1';
+                downloadBtn.style.pointerEvents = 'auto';
+            } catch (error) {
+                console.error('فشل في إعادة الاتصال بـ Firebase:', error);
+            }
         });
 
         window.addEventListener('offline', () => {
             showNotification('انقطع الاتصال بالإنترنت 📡', 'error');
+            isFirebaseConnected = false;
         });
+
+        // Real-time listener for download count updates
+        function setupRealtimeListener() {
+            if (isFirebaseConnected) {
+                db.collection('appStats').doc('downloads').onSnapshot((doc) => {
+                    if (doc.exists) {
+                        const newCount = doc.data().count || 0;
+                        if (newCount !== downloadCount) {
+                            downloadCount = newCount;
+                            updateDownloadCountDisplay();
+                            console.log(`🔄 تم تحديث العداد في الوقت الفعلي: ${downloadCount}`);
+                        }
+                    }
+                }, (error) => {
+                    console.error('خطأ في مراقبة التحديثات:', error);
+                });
+            }
+        }
 
         // Error Handling
         window.addEventListener('error', (e) => {
@@ -979,11 +1067,21 @@
             console.error('رفض Promise غير معالج:', e.reason);
         });
 
+        // Setup realtime listener after successful connection
+        setTimeout(() => {
+            if (isFirebaseConnected) {
+                setupRealtimeListener();
+                console.log('🔄 تم تفعيل مراقبة التحديثات في الوقت الفعلي');
+            }
+        }, 2000);
+
         console.log('🎌 موقع تحميل AniHost جاهز!');
-        console.log('🔥 Firebase متصل للإحصائيات');
+        console.log('🔥 Firebase متصل للإحصائيات العالمية');
         console.log('📱 رابط التحميل جاهز');
-        console.log('📊 عداد التحميلات يعمل');
+        console.log('📊 عداد التحميلات عالمي لجميع المستخدمين');
         console.log('✨ تأثيرات بصرية مفعلة');
+        console.log('🚫 تم إزالة localStorage تماماً');
+        console.log('🌐 العداد يعمل في الوقت الفعلي');
     </script>
 </body>
 </html>
